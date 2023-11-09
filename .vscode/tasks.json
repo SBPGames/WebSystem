@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start a test web server.",
+			"type": "shell",
+			"command": "source ./bin/testWebServer.sh",
+			"presentation": {
+				"panel": "dedicated",
+				"clear": true
+			},
+			"problemMatcher": []
+		}
+	]
+
+}
