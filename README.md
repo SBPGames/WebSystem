@@ -1,5 +1,7 @@
 # The Seven Lives' Website
-This website is the official of The Seven Lives that present, give links to social medias and places to purshase the game, show collaborators and the whole credits in a separate page, and offer a contact page to allow customers sending email easier to our team.
+This website is the official of The Seven Lives that present, give links to social medias and places to purshase the
+game, show collaborators and the whole credits in a separate page, and offer a contact page to allow customers sending
+email easier to our team.
 
 ## Setup
 ### Installation
