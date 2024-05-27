@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-# The Seven Lives' Website
-This website is the official of The Seven Lives that present, give links to social medias and places to purshase the
-game, show collaborators and the whole credits in a separate page, and offer a contact page to allow customers sending
-email easier to our team.
-=======
 # SBP Games web system
 This repository contains the whole web system of SBP Games for our websites. You
 will find there both our **own PHP framework**, following
@@ -12,7 +6,6 @@ will find there both our **own PHP framework**, following
 and every implementations needed to make working our websites, including the
 **main one** and **thoses for each games**. It also keeps their designs and
 their branding.
->>>>>>> master
 
 Moreover, we aren't using any dependencies manager or development tools except
 thoses we make. They fit exacly conventions we follow and help us to keep a full
