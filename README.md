@@ -1,4 +1,4 @@
-# SBP Games web system
+# SBP Games web system [![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v3-orange.svg)](COPYING.LESSER)
 This repository contains the whole web system of SBP Games for our websites. You
 will find there both our **own PHP framework**, following
 [PSR](https://www.php-fig.org/psr/)s and a
@@ -23,7 +23,7 @@ _Soon..._
 
 ## License
 SBP Games web system (Framework, Implemented websites, Designs and Branding)  
-Copyright &copy; 2024 - SBP Games
+Copyright &copy; 2024 - SBP Games (https://www.sbpgames.fr/)
 
 1. Copy, distribution, derivative works or reuse of **the designs
 and the branding of SBP Games websites** is PROHIBITED (⚠️).
