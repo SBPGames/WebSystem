@@ -35,14 +35,14 @@ function getLibrairiesVendors(string $path): array{
  * PROJECT_VENDOR at namespace's top-level) - or in the librairies folder
  * (LIBRARIES_FOLDER).
  *
- * @param string $path A path from where specific folders, where the file is
- * searched, can be found.
  * @param string $classname The name of the class to be loaded, indicating by
  * its namespace the path of its file relative to one of the specific folders.
+ * @param string $path A path from where specific folders, where the file is
+ * searched, can be found.
  * @return void
  * @throws UnexpectedValueException If `$classname` doesn't have a (valid)
  * vendor name as namespace's top-level (PHP, PSR-1 and PSR-4).
  */
-function loadClass(string $path, string $classname): void{
+function loadClass(string $classname, string $path): void{
 
 }
