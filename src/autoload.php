@@ -44,7 +44,7 @@ function getLibrairiesVendors(string $path): array{
  * with `$throwing`. Moreover, underscores aren't allowed in namespace or class
  * names.
  *
- * @param string $class The fully qualified name of the class to be loaded,
+ * @param string $classname The fully qualified name of the class to be loaded,
  * indicating by its namespace the path of its file relative to one of the
  * specific folders.
  * @param string $path A path from where specific folders, where the file is
@@ -53,11 +53,57 @@ function getLibrairiesVendors(string $path): array{
  * errors on purpose (Set it to false to follow PSR-4 standard).
  * @return void
  * @throws UnexpectedValueException
- * 		- If `$class` isn't a valid fully qualified class name (PHP, PSR-1
+ * 		- If `$classname` isn't a valid fully qualified class name (PHP, PSR-1
  * 		and PSR-4);
  * 		- Or if any file containing the class called `$classname` can't be found
  *		in one of the specific folders.
+ * @throws RuntimeException If `require_once` can't import the file.
  */
-function loadClass(string $class, string $path, bool $throwing = true): void{
+function loadClass(string $classname, string $path, bool $throwing = true): void{
+	// Checking class name.
+	if(!preg_match(
+		"/^(?'vendor'[A-Z][a-zA-Z0-9]*)\\\\(?'classpath'[A-Z][a-zA-Z0-9]*(?:\\\\[A-Z][a-zA-Z0-9]*)*)$/",
+		$classname, $parts
+	))
+		if($throwing)
+			throw new \UnexpectedValueException(
+				"Invalid class name ($classname); The vendor may missing;"
+			);
+		else return;
+	
+	// Completing path pointing to .php class file.
+	$path = rtrim($path, "/")."/";
+	$parts["classpath"] = str_replace("\\", "/", $parts["classpath"]);
 
+	if($parts["vendor"] === PROJECT_VENDOR)
+		$path .= sprintf("%s/%s", SOURCES_FOLDER, $parts["classpath"]);
+	else
+		$path .= sprintf("%s/%s/%s", LIBRARIES_FOLDER,
+			$parts["vendor"], $parts["classpath"]
+		);
+	
+	$path .= ".php";
+	
+	// Verifying file.
+	if(!is_file($path))
+		if($throwing)
+			throw new \UnexpectedValueException(
+				"No such file ($path) containing the class $classname;"
+			);
+		else return;
+
+	// Calling require_once and prevent its errors.
+	try{
+		set_error_handler(function($_, $__, $___, $____){}, E_WARNING);
+
+		@require_once $path;
+	}catch(\Error $e){
+		if($throwing)
+			throw new \RuntimeException(sprintf(
+				"Can't import the file $path (%s);",
+				$e->getMessage()
+			));
+	}finally{
+		restore_error_handler();
+	}
 }
