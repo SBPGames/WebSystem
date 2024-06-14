@@ -2,6 +2,10 @@
 
 namespace SBPGames\Framework\Service;
 
+/**
+ * @package SBPGames\Framework\Service
+ * @author Xibitol <contact@pimous.dev>
+ */
 abstract class Service{
 
 	public function __construct(){

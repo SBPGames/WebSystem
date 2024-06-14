@@ -6,6 +6,10 @@ use Psr\Container\ContainerInterface;
 use SBPGames\Framework\Exception\NotFoundException;
 use SBPGames\Framework\Service\Service;
 
+/**
+ * @package SBPGames\Framework\Service
+ * @author Xibitol <contact@pimous.dev>
+ */
 class ServiceContainer implements ContainerInterface{
 
 	/** @var array<string, string | Closure | Service> */
