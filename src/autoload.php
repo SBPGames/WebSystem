@@ -17,6 +17,8 @@ const LIBRARIES_FOLDER = "lib";
  * @return array A array of allowed folder names (Installed library vendors)
  * found under the librairies folder (LIBRARIES_FOLDER) - empty if the latter
  * folder is not found or can't be read.
+ *
+ * @author Xibitol <contact@pimous.dev>
  */
 function getLibrairiesVendors(string $path): array{
 	$path = rtrim($path, "/").LIBRARIES_FOLDER;
@@ -58,9 +60,11 @@ function getLibrairiesVendors(string $path): array{
  * 		- Or if any file containing the class called `$classname` can't be found
  *		in one of the specific folders.
  * @throws RuntimeException If `require_once` can't import the file.
+ *
+ * @author Xibitol <contact@pimous.dev>
  */
 function loadClass(string $classname, string $path, bool $throwing = true): void{
-	// Checking class name.
+	// Asserting class name.
 	if(!preg_match(
 		"/^(?'vendor'[A-Z][a-zA-Z0-9]*)\\\\(?'classpath'[A-Z][a-zA-Z0-9]*(?:\\\\[A-Z][a-zA-Z0-9]*)*)$/",
 		$classname, $parts
