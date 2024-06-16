@@ -52,7 +52,7 @@ class ServiceContainer implements ContainerInterface{
 				);
 
 			$this->services[
-				ServiceContainer::verifyOrExceptClass($class)
+				ServiceContainer::assertClass($class)
 			] = $entry;
 		}
 	}
@@ -95,8 +95,8 @@ class ServiceContainer implements ContainerInterface{
 		$this->services[$id] = $service;
 	}
 
-	// UTILITY FUNCTIONS
-	private static function verifyOrExceptClass(string $class): string{
+	// ASSERTS
+	private static function assertClass(string $class): string{
 		try{
 			$reflecClass = new \ReflectionClass($class);
 
