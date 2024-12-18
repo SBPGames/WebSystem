@@ -104,8 +104,6 @@ function loadClass(
 		$classpath
 	);
 
-	var_dump($path);
-
 	// Verifying file.
 	if(!is_file($path))
 		if($throwing)

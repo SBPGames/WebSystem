@@ -12,49 +12,12 @@ use SBPGames\Framework\Service\Service;
  */
 class ServiceContainer implements ContainerInterface{
 
-	/** @var array<string, string | Closure | Service> */
+	/** @var array<string, string|Closure|Service> */
 	private array $services = [];
 
-	/** @param array<string | Closure> */
+	/** @param array<int|string, string|Closure> $entries */
 	public function __construct(array $entries){
-		foreach($entries as $key => $entry){
-			// Class name entries (Not associative).
-			if(gettype($entry) == "string"){
-				if(gettype($key) != "integer")
-					throw new ContainerException(sprintf(
-						"Only closure may be mapped to not-integer keys (%s ".
-						"=> %s);",
-						$key, $entry
-					));
-
-				$class = $entry;
-			// Closure entries (Associative or Based on return type).
-			}else if($entry instanceof \Closure
-				&& in_array(gettype($key), ["integer", "string"])
-			){
-				$reflecRType = (new \ReflectionFunction($entry))
-					->getReturnType();
-
-				if(gettype($key) == "integer"){
-					if(!($reflecRType instanceof \ReflectionType)
-						|| $reflecRType->isBuiltin()
-					)
-						throw new ContainerException(
-							"Unexpected closure return type of n°$key;"
-						);
-
-					$class = $reflecRType->getName();
-				}else $class = $key;
-			// Not supported/Invalid...
-			}else
-				throw new ContainerException(
-					"Unexpected entry type $key => $entry;" 
-				);
-
-			$this->services[
-				ServiceContainer::assertClass($class)
-			] = $entry;
-		}
+		$this->addServices($entries);
 	}
 
 	// GETTERS
@@ -70,24 +33,62 @@ class ServiceContainer implements ContainerInterface{
 	}
 	
 	// SETTERS
+	/** @param array<int|string, string|Closure> $entries */
+	private function addServices(array $entries){
+		foreach($entries as $key => $entry){
+			$class = null;
+			$func = null;
+
+			switch(true){
+				// Class name entries (Not associative).
+				case is_int($key) && is_string($entry):
+					$class = $entry;
+					break;
+
+				// Closure entries (Associative or Based on return type).
+				case is_int($key) && $entry instanceof \Closure:
+					$func = $entry;
+
+					$rtp = (new \ReflectionFunction($func))->getReturnType();
+					if(!($rtp instanceof \ReflectionNamedType)
+						|| $rtp->isBuiltin()
+						|| $rtp->allowsNull()
+					)
+						throw new ContainerException(
+							"Unexpected closure return type of n°$key;"
+						);
+
+					$class = $rtp->getName();
+					break;
+
+				// Not supported/Invalid...
+				default:
+					throw new ContainerException(sprintf(
+						"Unexpected entry type %s (%s) => %s (%s;",
+						$key, gettype($key), $entry, gettype($entry)
+					));
+			}
+
+			$this->addService($class, $func ?? null);
+		}
+	}
+	private function addService(string $class, ?\Closure $func = null){
+		if($this->has($class))
+			throw new ContainerException("Service $class already exists;");
+
+		ServiceContainer::assertClass($class);
+		$this->services[$class] = isset($func) ? $func : $class;
+	}
+
 	private function prepareService(string $id): void{
 		if(!$this->has($id)) throw new NotFoundException();
 		$service = $this->services[$id];
 
-		if($service instanceof \Closure){
-			$s = $service();
-
-			if(!($s instanceof Service))
-				throw new ContainerException(
-					"Invalid object type returned while initializing the "
-					."service $id with a closure;"
-				);
-
-			$service = $s;
-		}else if(gettype($service) == "string"){
-			/** @var Service */
+		if(is_string($service))
 			$service = (new \ReflectionClass($service))->newInstance();
-		}else
+		else if($service instanceof \Closure)
+			$service = $service();
+		else
 			return;
 
 		$service->init();
@@ -96,16 +97,12 @@ class ServiceContainer implements ContainerInterface{
 	}
 
 	// ASSERTS
-	private static function assertClass(string $class): string{
+	private static function assertClass(string $class): void{
 		try{
-			$reflecClass = new \ReflectionClass($class);
-
-			if(!$reflecClass->isSubclassOf(Service::class))
+			if(!(new \ReflectionClass($class))->isSubclassOf(Service::class))
 				throw new ContainerException(
 					"Class must be a service ($class);"
 				);
-
-			return $reflecClass->getName();
 		}catch(\ReflectionException $_){
 			throw new ContainerException("Invalid class name $class;");
 		}
