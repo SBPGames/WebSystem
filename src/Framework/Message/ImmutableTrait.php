@@ -13,9 +13,7 @@ trait ImmutableTrait{
 
 	// IMMUTABLE SETTERS
 	protected function with(string $param, mixed $value): static{
-		if($value === $this->{
-			sprintf(static::GETTER_FORMAT, ucwords($param))
-		}())
+		if($value === $this->{static::getGetterFunc($param)}())
 			return $this;
 		else if(!isset($value)){
 			$new = clone $this;
@@ -24,9 +22,15 @@ trait ImmutableTrait{
 		}
 
 		$new = clone $this;
-		$new->{
-			sprintf(static::SETTER_FORMAT, ucwords($param))
-		}($value);
+		$new->{static::getSetterFunc($param)}($value);
 		return $new;
+	}
+
+	// FUNCTIONS
+	private static function getGetterFunc(string $param): string{
+		return sprintf(static::GETTER_FORMAT, ucwords($param));
+	}
+	private static function getSetterFunc(string $param): string{
+		return sprintf(static::SETTER_FORMAT, ucwords($param));
 	}
 }

@@ -56,7 +56,7 @@ class Uri implements UriInterface{
 	public static function fromGlobals(): static{
 		$parsed = parse_url($_SERVER["REQUEST_URI"]);
 
-		return new Uri(
+		return new static(
 			Scheme::tryFrom(
 				strtolower(explode("/", $_SERVER["SERVER_PROTOCOL"])[0])
 			),
@@ -124,32 +124,32 @@ class Uri implements UriInterface{
 
 	// Authority
 	private function setHost(string $host): void{
-		static::assertHost($host);
+		self::assertHost($host);
 		$this->host = $host;
 	}
 	private function setPort(?int $port): void{
-		if(isset($port)) static::assertPort($port);
+		if(isset($port)) self::assertPort($port);
 		$this->port = $port;
 	}
 
 	// Path
 	private function setPath(string $path): void{
-		$path = static::urlencode($path);
-		static::assertPath($path);
+		$path = self::urlencode($path);
+		self::assertPath($path);
 
 		$this->path = $path;
 	}
 	private function setQuery(string $query): void{
-		$query = static::urlencode($query, static::QUERY_ALLOWED_CHARACTERS);
-		static::assertQuery($query);
+		$query = self::urlencode($query, self::QUERY_ALLOWED_CHARACTERS);
+		self::assertQuery($query);
 
 		$this->query = $query;
 	}
 	private function setFragment(string $fragment): void{
-		$fragment = static::urlencode($fragment,
-			static::FRAGMENT_ALLOWED_CHARACTERS
+		$fragment = self::urlencode($fragment,
+			self::FRAGMENT_ALLOWED_CHARACTERS
 		);
-		static::assertFragment($fragment);
+		self::assertFragment($fragment);
 
 		$this->fragment = $fragment;
 	}
@@ -229,11 +229,11 @@ class Uri implements UriInterface{
 			strlen($host) > 0
 			// IP literal (Unsupported)
 			&& true
-			&& !preg_match(static::IPV4_PATTERN, $host)
+			&& !preg_match(self::IPV4_PATTERN, $host)
 			// Registered name
 			&& (
 				strlen($host) > 255
-				|| !preg_match(static::REGISTERED_NAME_PATTERN, $host)
+				|| !preg_match(self::REGISTERED_NAME_PATTERN, $host)
 			)
 		)
 			throw new \InvalidArgumentException(sprintf(
@@ -251,21 +251,21 @@ class Uri implements UriInterface{
 
 	// Path
 	private static function assertPath(string $path): void{
-		if(!preg_match(static::PATH_PATTERN, $path))
+		if(!preg_match(self::PATH_PATTERN, $path))
 			throw new \InvalidArgumentException(sprintf(
 				"Invalid path (%s);",
 				$path
 			));
 	}
 	private static function assertQuery(string $query): void{
-		if(!preg_match(static::QUERY_PATTERN, $query))
+		if(!preg_match(self::QUERY_PATTERN, $query))
 			throw new \InvalidArgumentException(sprintf(
 				"Invalid query (%s);",
 				$query
 			));
 	}
 	private static function assertFragment(string $fragment): void{
-		if(!preg_match(static::FRAGMENT_PATTERN, $fragment))
+		if(!preg_match(self::FRAGMENT_PATTERN, $fragment))
 			throw new \InvalidArgumentException(sprintf(
 				"Invalid fragment (%s);",
 				$fragment
