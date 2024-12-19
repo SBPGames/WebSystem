@@ -12,11 +12,13 @@ use SBPGames\Framework\Service\Service;
  */
 class ServiceContainer implements ContainerInterface{
 
+	private ServiceConfig $serviceConfig;
 	/** @var array<string, string|Closure|Service> */
 	private array $services = [];
 
 	/** @param array<int|string, string|Closure> $entries */
-	public function __construct(array $entries){
+	public function __construct(ServiceConfig $serviceConfig, array $entries){
+		$this->serviceConfig = $serviceConfig;
 		$this->addServices($entries);
 	}
 
@@ -91,7 +93,7 @@ class ServiceContainer implements ContainerInterface{
 		else
 			return;
 
-		$service->init();
+		$service->init($this->serviceConfig->getConfig($service));
 
 		$this->services[$id] = $service;
 	}

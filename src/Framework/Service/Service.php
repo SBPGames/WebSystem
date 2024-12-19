@@ -8,12 +8,25 @@ namespace SBPGames\Framework\Service;
  */
 abstract class Service{
 
-	public function __construct(){
+	private string $identifier;
+
+	public function __construct(string $identifier){
+		$this->identifier = $identifier;
+
 		printf("Constructed service %s.\n", static::class);
 	}
 
+	// GETTERS
+	/** @return string[] */
+	public abstract function getMandatoryConfigFields(): array;
+	/** @return string[] */
+	public abstract function getConfigFields(): array;
+
+	public function getIdentifier(): string{ return $this->identifier; }
+
 	// LIFECYCLE FUNCTIONS
-	public function init(): void{
+	/** @param array<string, mixed> $config */
+	public function init(array $config): void{
 		printf("Initialized service %s.\n", static::class);
 	}
 }
