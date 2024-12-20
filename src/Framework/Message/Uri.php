@@ -81,8 +81,8 @@ class Uri implements UriInterface{
 		throw new NotImplementedException();
 	}
 	public function getHost(): string{ return $this->host; }
+	// This not complies to standard: Almost always returns a value.
 	public function getPort(): ?int{
-		// This not comply to standard: Always returns a value.
 		return isset($this->port) ? $this->port : (
 			!is_null($this->getSchemeCase()) ?
 				$this->scheme->getStandardPort() : null
@@ -91,10 +91,8 @@ class Uri implements UriInterface{
 	public function getAuthority(): string{
 		$authority = $this->getHost();
 
-		if(!is_null($this->getPort())
-			&& !is_null($this->getSchemeCase())
-			&& $this->getPort() !== $this->scheme->getStandardPort()
-		) $authority .= sprintf(":%d", $this->getPort());
+		if(!is_null($this->getPort()))
+			$authority .= sprintf(":%d", $this->getPort());
 
 		return $authority;
 	}
@@ -106,6 +104,11 @@ class Uri implements UriInterface{
 
 	// SETTERS
 	private function setSchemeCase(?Scheme $scheme): void{
+		if(!is_null($this->getPort())
+			&& isset($scheme)
+			&& $this->getPort() === $scheme->getStandardPort()
+		) $this->setPort(null);
+
 		$this->scheme = $scheme;
 	}
 	private function setScheme(string $scheme): void{
@@ -115,7 +118,7 @@ class Uri implements UriInterface{
 		}
 
 		if(($sc = Scheme::tryFrom(strtolower($scheme))) === null)
-			throw new \InvalidArgumentException(
+			throw new \UnexpectedValueException(
 				"Invalid or unsupported scheme ($scheme);"
 			);
 
@@ -128,6 +131,14 @@ class Uri implements UriInterface{
 		$this->host = $host;
 	}
 	private function setPort(?int $port): void{
+		if(is_null($port) || (
+			!is_null($this->getSchemeCase())
+			&& $port === $this->scheme->getStandardPort()
+		)){
+			unset($this->port);
+			return;
+		}
+
 		if(isset($port)) self::assertPort($port);
 		$this->port = $port;
 	}
@@ -156,7 +167,10 @@ class Uri implements UriInterface{
 
 	// IMMUTABLE SETTERS
 	public function withScheme(string|Scheme $scheme): static{
-		return $this->with("scheme", strtolower($scheme));
+		if(is_string($scheme))
+			return $this->with("scheme", strtolower($scheme));
+		else
+			return $this->with("schemeCase", $scheme);
 	}
 
 	// Authority
@@ -202,7 +216,7 @@ class Uri implements UriInterface{
 	public function __toString(): string{
 		$uri = "";
 
-		if(strlen($this->getScheme()) > 0)
+		if(!is_null($this->getSchemeCase()))
 			$uri .= sprintf("%s:", $this->getScheme());
 		if(strlen($this->getHost()) > 0)
 			$uri .= sprintf("//%s", $this->getAuthority());

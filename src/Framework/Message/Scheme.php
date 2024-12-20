@@ -14,8 +14,8 @@ enum Scheme: string{
 	// GETTERS
 	public function getStandardPort(): int{
 		return match($this->value){
-			Scheme::HTTP => 80,
-			Scheme::HTTPS => 443,
+			"http" => 80,
+			"https" => 443,
 
 			default => -1
 		};

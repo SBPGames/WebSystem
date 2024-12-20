@@ -14,7 +14,7 @@ class Response extends Message implements ResponseInterface{
 
 	public const START_LINE_FORMAT = "HTTP/%s %d %s";
 
-	private int|Status $status;
+	private Status $status;
 	/** When the reason phrase is overrided. */
 	private string $reasonPhrase = "";
 
@@ -31,30 +31,22 @@ class Response extends Message implements ResponseInterface{
 	}
 
 	// GETTERS
-	public function getStatus(): ?Status{
-		return $this->status instanceof Status ? $this->status : null;
-	}
-	public function getStatusCode(): int{
-		return $this->status->value ?? $this->status;
-	}
+	public function getStatus(): Status{ return $this->status; }
+	public function getStatusCode(): int{ return $this->status->value; }
 	public function getReasonPhrase(): string{
-		return (
-			strlen($this->reasonPhrase) === 0 && !is_null($this->getStatus()) ?
-				$this->getStatus()->getReasonPhrase() : $this->reasonPhrase
-		);
+		return strlen($this->reasonPhrase) === 0 ?
+			$this->getStatus()->getReasonPhrase() : $this->reasonPhrase;
 	}
 
 	// SETTERS
-	public function setStatus(Status $status): void{
-		$this->status = $status;
-	}
+	public function setStatus(Status $status): void{ $this->status = $status; }
 	public function setStatusCode(int $code): void{
-		self::assertCode($code);
+		if(($status = Status::tryFrom($code)) === null)
+			throw new \UnexpectedValueException(
+				"Invalid or unsupported status code ($code);"
+			);
 
-		if(($status = Status::tryFrom($code)) !== null)
-			$this->setStatus($status);
-		else
-			$this->status = $code;
+		$this->setStatus($status);
 	}
 	public function setReasonPhrase(string $reasonPhrase): void{
 		if(!is_null($this->getStatus())
@@ -71,7 +63,7 @@ class Response extends Message implements ResponseInterface{
 	public function withStatus(int|Status $code,
 		string $reasonPhrase = ""
 	): static{
-		return $this->with("statusCode", $code)
+		return $this->with(is_int($code) ? "statusCode" : "status", $code)
 			->with("reasonPhrase", $reasonPhrase);
 	}
 
@@ -85,11 +77,6 @@ class Response extends Message implements ResponseInterface{
 	}
 
 	// ASSERTIONS
-	private static function assertCode(int $code): void{
-		if($code < 100 || $code > 599)
-			throw new \InvalidArgumentException("Invalid status code ($code);");
-	}
-
 	private static function assertReasonPhrase(string $reasonPhrase): void{
 		// BUG: Line feeds (0x09) not matched. Workaround:
 		$reasonPhrase = str_replace("\n", "\0", $reasonPhrase);
