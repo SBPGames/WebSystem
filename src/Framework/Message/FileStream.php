@@ -10,6 +10,8 @@ use Psr\Http\Message\StreamInterface;
  */
 class FileStream implements StreamInterface{
 
+	public const DEFAULT_BUFFER_SIZE = 1024*2;
+
 	public const PHP_INPUT_STREAM_URI = "php://input";
 	public const PHP_OUTPUT_STREAM_URI = "php://output";
 	public const PHP_TEMPORATY_STREAM_URI = "php://temp";
@@ -22,13 +24,13 @@ class FileStream implements StreamInterface{
 
 	// CONSTRUCTORS
 	public static function fromInput(){
-		return new static(self::PHP_INPUT_STREAM_URI);
+		return new static(self::PHP_INPUT_STREAM_URI, "r");
 	}
 	public static function fromOutput(){
-		return new static(self::PHP_OUTPUT_STREAM_URI);
+		return new static(self::PHP_OUTPUT_STREAM_URI, "w");
 	}
 	public static function fromTemp(){
-		return new static(self::PHP_TEMPORATY_STREAM_URI);
+		return new static(self::PHP_TEMPORATY_STREAM_URI, "r+");
 	}
 
 	// GETTERS
@@ -106,7 +108,7 @@ class FileStream implements StreamInterface{
 			);
 	}
 
-	public function read(int $length = 2048): string{
+	public function read(int $length): string{
 		if(is_bool($read = fread($this->getStream(), $length)))
 			throw new \RuntimeException("Cannot read from stream;");
 
@@ -121,7 +123,7 @@ class FileStream implements StreamInterface{
 	public function getContents(): string{
 		$buffer = "";
 
-		while(!$this->eof()) $buffer .= $this->read();
+		while(!$this->eof()) $buffer .= $this->read(self::DEFAULT_BUFFER_SIZE);
 
 		return $buffer;
 	}

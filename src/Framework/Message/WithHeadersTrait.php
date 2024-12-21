@@ -12,6 +12,8 @@ trait WithHeadersTrait{
 	public const HEADER_VALUE_PATTERN = "/^[[:graph:]]+(?:[\s\h]+[[:graph:]]+)*$/";
 	public const HEADER_SEPARATOR_PATTERN = "/,\s*/";
 
+	public const HEADER_FORMAT = "%s: %s";
+
 	/** @var array<string, string[]> */
 	private array $headers = [];
 
@@ -91,6 +93,14 @@ trait WithHeadersTrait{
 	): string{
 		return $this->hasHeader($name) ?
 			implode($separator, $this->getHeader($name)) : "";
+	}
+
+	public function getHeaderFullLine(string $name, string $separator = ","){
+		if(!$this->hasHeader($name)) return "";
+
+		return sprintf(self::HEADER_FORMAT,
+			$name, $this->getHeaderLine($name, $separator)
+		);
 	}
 
 	// ASSERTIONS

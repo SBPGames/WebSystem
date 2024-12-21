@@ -27,7 +27,7 @@ class Request extends Message implements RequestInterface{
 		Method $method = Method::GET,
 		array $headers = [],
 		StreamInterface $body = new FileStream(
-			FileStream::PHP_OUTPUT_STREAM_URI
+			FileStream::PHP_OUTPUT_STREAM_URI, "r"
 		)
 	){
 		parent::__construct($version, $headers, $body);

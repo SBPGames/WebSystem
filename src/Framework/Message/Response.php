@@ -17,22 +17,20 @@ class Response extends Message implements ResponseInterface{
 
 	private Status $status;
 	/** When the reason phrase is overrided. */
-	private string $reasonPhrase;
+	private string $reasonPhrase = "";
 
 	/** @param array<string, string[]> $headers */
 	public function __construct(
 		float $version = 1.1,
 		array $headers = [],
 		Status $status = Status::OK,
-		string $reasonPhrase = "",
 		StreamInterface $body = new FileStream(
-			FileStream::PHP_OUTPUT_STREAM_URI
+			FileStream::PHP_TEMPORATY_STREAM_URI, "w"
 		)
 	){
 		parent::__construct($version, $headers, $body);
 
 		$this->setStatus($status);
-		$this->setReasonPhrase($reasonPhrase);
 	}
 
 	// GETTERS
@@ -79,6 +77,21 @@ class Response extends Message implements ResponseInterface{
 			$this->getStatusCode(),
 			$this->getReasonPhrase()
 		);
+	}
+
+	public function write(
+		StreamInterface $output
+	): void{
+		header($this->getStartLine());
+
+		foreach(array_keys($this->getHeaders()) as $name)
+			header($this->getHeaderFullLine($name));
+
+		if($this->getBody()->isSeekable()) $this->getBody()->rewind();
+		while(!$this->getBody()->eof())
+			$output->write(
+				$this->getBody()->read(FileStream::DEFAULT_BUFFER_SIZE)
+			);
 	}
 
 	// ASSERTIONS

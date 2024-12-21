@@ -47,7 +47,7 @@ class ServerRequest extends Request implements ServerRequestInterface{
 		array $uploadedFiles = [],
 
 		StreamInterface $body = new FileStream(
-			FileStream::PHP_INPUT_STREAM_URI
+			FileStream::PHP_INPUT_STREAM_URI, "r"
 		),
 		null|array|object $parsedBody = null
 	){

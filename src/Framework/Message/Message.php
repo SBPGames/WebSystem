@@ -25,7 +25,7 @@ abstract class Message implements MessageInterface{
 		float $version = 1.1,
 		array $headers = [],
 		StreamInterface $body = new FileStream(
-			FileStream::PHP_TEMPORATY_STREAM_URI
+			FileStream::PHP_TEMPORATY_STREAM_URI, "r+"
 		)
 	){
 		$this->__constructWithHeadersTrait($headers);
