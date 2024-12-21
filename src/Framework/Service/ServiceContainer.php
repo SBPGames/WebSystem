@@ -3,7 +3,7 @@
 namespace SBPGames\Framework\Service;
 
 use Psr\Container\ContainerInterface;
-use SBPGames\Framework\Exception\NotFoundException;
+use SBPGames\Framework\Service\NotFoundException;
 use SBPGames\Framework\Service\Service;
 
 /**
