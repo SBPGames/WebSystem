@@ -51,7 +51,7 @@ class FileStream implements StreamInterface{
 	public function tell(): int{
 		if(is_bool($pos = ftell($this->getStream())))
 			throw new \RuntimeException(
-				"Cannot tell current position of the cursor in the stream."
+				"Cannot tell current position of the cursor in the stream;"
 			);
 
 		return $pos;
@@ -66,7 +66,7 @@ class FileStream implements StreamInterface{
 
 		if(is_bool($s))
 			throw new \RuntimeException(
-				"Cannot open file $filename with mode $mode."
+				"Cannot open file $filename with mode \"$mode\";"
 			);
 
 		$this->stream = $s;
@@ -85,25 +85,25 @@ class FileStream implements StreamInterface{
 	public function seek(int $offset, int $whence = SEEK_SET): void{
 		if(fseek($this->getStream(), $offset, $whence) === -1)
 			throw new \RuntimeException(
-				"Cannot seek along the stream."
+				"Cannot seek along the stream;"
 			);
 	}
 	public function rewind(): void{
 		if(!rewind($this->getStream()))
 			throw new \RuntimeException(
-				"Cannot rewind back to the stream's beginning."
+				"Cannot rewind back to the stream's beginning;"
 			);
 	}
 
 	public function read(int $length = 2048): string{
 		if(is_bool($read = fread($this->getStream(), $length)))
-			throw new \RuntimeException("Cannot read from stream.");
+			throw new \RuntimeException("Cannot read from stream;");
 
 		return $read;
 	}
 	public function write(string $string): int{
 		if(is_bool($written = fwrite($this->getStream(), $string)))
-			throw new \RuntimeException("Cannot write to stream.");
+			throw new \RuntimeException("Cannot write to stream;");
 
 		return $written;
 	}
@@ -113,6 +113,16 @@ class FileStream implements StreamInterface{
 		while(!$this->eof()) $buffer .= $this->read();
 
 		return $buffer;
+	}
+
+	public function copyTo(FileStream $stream): int{
+		if(is_bool($copied = stream_copy_to_stream(
+			$this->getStream(),
+			$stream->getStream()
+		)))
+			throw new \RuntimeException("Cannot copy this stream to another;");
+
+		return $copied;
 	}
 
 	public function __toString(): string{
