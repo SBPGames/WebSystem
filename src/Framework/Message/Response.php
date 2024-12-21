@@ -16,8 +16,9 @@ class Response extends Message implements ResponseInterface{
 
 	private Status $status;
 	/** When the reason phrase is overrided. */
-	private string $reasonPhrase = "";
+	private string $reasonPhrase;
 
+	/** @param array<string, string[]> $headers */
 	public function __construct(
 		float $version = 1.1,
 		array $headers = [],

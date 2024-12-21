@@ -17,32 +17,19 @@ class Request extends Message implements RequestInterface{
 	private UriInterface $uri;
 	private ?string $methodString = null;
 	private Method $method;
-	private string $requestTarget;
+	private string $requestTarget = "";
 
+	/** @param array<string, string[]> $headers */
 	public function __construct(
 		float $version = 1.1,
 		UriInterface $uri = new Uri(),
 		Method $method = Method::GET,
-		array $headers = [],
-		string $requestTarget = ""
+		array $headers = []
 	){
 		parent::__construct($version, $headers);
 
 		$this->setUri($uri);
 		$this->setMethodCase($method);
-		$this->setRequestTarget($requestTarget);
-	}
-
-	// CONSTRUCTORS
-	public static function fromGlobals(): static{
-		$request = new self(
-			1.1,
-			Uri::fromGlobals(),
-			Method::from($_SERVER["REQUEST_METHOD"])
-		);
-		$request->setFromGlobals();
-
-		return $request;
 	}
 
 	// GETTERS

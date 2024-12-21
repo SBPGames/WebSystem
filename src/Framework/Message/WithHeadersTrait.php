@@ -44,23 +44,22 @@ trait WithHeadersTrait{
 	}
 
 	// SETTERS
-	private function setHeader(string $name, array $value): void{
-		self::assertHeaderName($name);
+	private function setHeader(string $name, string|array $value): void{
+		if(is_string($value)) $value = [$value];
 
+		self::assertHeaderName($name);
 		foreach($value as $v) self::assertHeaderValue($v);
 
 		$this->headers[$name] = $value;
 	}
+	private function removeHeader(string $name): void{
+		self::assertHeaderName($name);
 
-	protected function setFromGlobals(): void{
-		$headers = apache_request_headers();
-
-		foreach($headers as $name => $value)
-			$this->setHeader($name, [$value]);
+		unset($this->headers[$this->getHeaderName($name)]);
 	}
 
 	// IMMUTABLE SETTERS
-	public function withHeader(string $name, $value): static{
+	public function withHeader(string $name, mixed $value): static{
 		if(is_string($value)) $value = [$value];
 
 		if(sizeof(array_diff($this->getHeader($name), $value)) === 0)
@@ -71,7 +70,7 @@ trait WithHeadersTrait{
 		return $new;
 	}
 
-	public function withAddedHeader(string $name, $value): static{
+	public function withAddedHeader(string $name, mixed $value): static{
 		if(is_string($value)) $value = [$value];
 
 		return $this->withHeader($name,
@@ -83,7 +82,7 @@ trait WithHeadersTrait{
 		if(!$this->hasHeader($name)) return $this;
 
 		$new = clone $this;
-		unset($new->headers[$this->getHeaderName($name)]);
+		$new->removeHeader($name);
 		return $new;
 	}
 

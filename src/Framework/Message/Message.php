@@ -14,7 +14,6 @@ abstract class Message implements MessageInterface{
 	use ImmutableTrait;
 	use WithHeadersTrait{
 		__construct as __constructWithHeadersTrait;
-		setFromGlobals as setFromGlobalsWithHeadersTrait;
 	}
 
 	public const PROTOCOL_VERSION_PATTERN = "/^[0-9]\\.[0-9]$/";
@@ -44,11 +43,6 @@ abstract class Message implements MessageInterface{
 		Message::assertProtocolVersion($version);
 
 		$this->protocolVersion = floatval($version);
-	}
-
-	protected function setFromGlobals(): void{
-		$this->setProtocolVersion(explode("/", $_SERVER["SERVER_PROTOCOL"])[1]);
-		$this->setFromGlobalsWithHeadersTrait();
 	}
 
 	// IMMUTABLE SETTERS
