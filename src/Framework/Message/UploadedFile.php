@@ -2,8 +2,8 @@
 
 namespace SBPGames\Framework\Message;
 
-use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
+
 /**
  * @package SBPGames\Framework\Message
  * @author Xibitol <contact@pimous.dev>
@@ -42,7 +42,7 @@ class UploadedFile implements UploadedFileInterface{
 		}, $_FILES);
 	}
 	public static function fromGlobal(array $file): static{
-		return static(
+		return new static(
 			$file["name"],
 			$file["type"],
 			$file["size"],
@@ -87,6 +87,7 @@ class UploadedFile implements UploadedFileInterface{
 				"$targetPath isn't a regular file or isn't writeable;"
 			);
 
+		// TODO: Find a better solution, maybe with a RegEx.
 		try{
 			$targetStream = new FileStream($targetPath, "w");
 			$targetStream->close();

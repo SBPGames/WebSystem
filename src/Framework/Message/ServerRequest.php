@@ -6,7 +6,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriInterface;
-use SBPGames\Framework\Exception\NotImplementedException;
 
 /**
  * @package SBPGames\Framework\Message
@@ -21,7 +20,7 @@ class ServerRequest extends Request implements ServerRequestInterface{
 	private array $queryParams;
 	/** @var array<string, mixed> */
 	private array $cookies;
-	/** @var array<string, UploadedFile> */
+	/** @var array<string, UploadedFileInterface> */
 	private array $uploadedFiles;
 	private null|array|object $parsedBody;
 
@@ -33,7 +32,7 @@ class ServerRequest extends Request implements ServerRequestInterface{
 	 * @param array<string, mixed> $serverParams
 	 * @param array<string, string|array<int|string, string>> $query
 	 * @param array<string, mixed> $cookies
-	 * @param array<string, UploadedFile> $uploadedFiles
+	 * @param array<string, UploadedFileInterface> $uploadedFiles
 	 */
 	public function __construct(
 		float $version = 1.1,
@@ -83,7 +82,7 @@ class ServerRequest extends Request implements ServerRequestInterface{
 			]),
 			$_GET,
 			$_COOKIE,
-			$_FILES,
+			UploadedFile::fromGlobals(),
 
 			FileStream::fromInput(),
 			count($_POST) > 0 ? $_POST : null
