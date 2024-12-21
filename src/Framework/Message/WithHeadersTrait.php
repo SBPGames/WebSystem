@@ -10,6 +10,7 @@ trait WithHeadersTrait{
 
 	public const HEADER_NAME_PATTERN = "/^[a-z0-9!#$%&'*+\-.^_`|~]+$/";
 	public const HEADER_VALUE_PATTERN = "/^[[:graph:]]+(?:[\s\h]+[[:graph:]]+)*$/";
+	public const HEADER_SEPARATOR_PATTERN = "/,\s*/";
 
 	/** @var array<string, string[]> */
 	private array $headers = [];
@@ -44,9 +45,7 @@ trait WithHeadersTrait{
 	}
 
 	// SETTERS
-	private function setHeader(string $name, string|array $value): void{
-		if(is_string($value)) $value = [$value];
-
+	private function setHeader(string $name, array $value): void{
 		self::assertHeaderName($name);
 		foreach($value as $v) self::assertHeaderValue($v);
 

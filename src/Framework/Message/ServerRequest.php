@@ -62,7 +62,12 @@ class ServerRequest extends Request implements ServerRequestInterface{
 			explode("/", $_SERVER["SERVER_PROTOCOL"])[1],
 			Uri::fromGlobals(),
 			Method::from($_SERVER["REQUEST_METHOD"]),
-			!is_bool($headers) ? $headers : [],
+			is_array($headers) ? array_combine(array_keys($headers), array_map(
+				function($value){
+					return preg_split(self::HEADER_SEPARATOR_PATTERN, $value);
+				},
+				$headers
+			)) : [],
 
 			array_diff_key($_SERVER, [
 				"REQUEST_URI" => 1,
