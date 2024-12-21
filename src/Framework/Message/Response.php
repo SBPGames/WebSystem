@@ -3,6 +3,7 @@
 namespace SBPGames\Framework\Message;
 
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * @package SBPGames\Framework\Message
@@ -23,9 +24,12 @@ class Response extends Message implements ResponseInterface{
 		float $version = 1.1,
 		array $headers = [],
 		Status $status = Status::OK,
-		string $reasonPhrase = ""
+		string $reasonPhrase = "",
+		StreamInterface $body = new FileStream(
+			FileStream::PHP_OUTPUT_STREAM_URI
+		)
 	){
-		parent::__construct($version, $headers);
+		parent::__construct($version, $headers, $body);
 
 		$this->setStatus($status);
 		$this->setReasonPhrase($reasonPhrase);

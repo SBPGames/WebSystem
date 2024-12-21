@@ -3,6 +3,7 @@
 namespace SBPGames\Framework\Message;
 
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriInterface;
 use SBPGames\Framework\Exception\NotImplementedException;
@@ -22,6 +23,7 @@ class ServerRequest extends Request implements ServerRequestInterface{
 	private array $cookies;
 	/** @var array<string, UploadedFile> */
 	private array $uploadedFiles;
+	private null|array|object $parsedBody;
 
 	/** @var array<string, mixed> */
 	private array $attributes = [];
@@ -42,23 +44,28 @@ class ServerRequest extends Request implements ServerRequestInterface{
 		array $serverParams = [],
 		array $query = [],
 		array $cookies = [],
-		array $uploadedFiles = []
+		array $uploadedFiles = [],
+
+		StreamInterface $body = new FileStream(
+			FileStream::PHP_INPUT_STREAM_URI
+		),
+		null|array|object $parsedBody = null
 	){
 		parent::__construct(
-			$version, $uri, $method, $headers
+			$version, $uri, $method, $headers, $body
 		);
 
 		$this->setServerParams($serverParams);
 		$this->setQueryParams($query);
 		$this->setCookieParams($cookies);
 		$this->setUploadedFiles($uploadedFiles);
+		$this->setParsedBody($parsedBody);
 	}
 
 	// CONSTRUCTORS
 	public static function fromGlobals(): static{
 		$headers = apache_request_headers();
-
-		return new static(
+		$serverRequest = new static(
 			explode("/", $_SERVER["SERVER_PROTOCOL"])[1],
 			Uri::fromGlobals(),
 			Method::from($_SERVER["REQUEST_METHOD"]),
@@ -76,8 +83,16 @@ class ServerRequest extends Request implements ServerRequestInterface{
 			]),
 			$_GET,
 			$_COOKIE,
-			$_FILES
+			$_FILES,
+
+			FileStream::fromInput(),
+			count($_POST) > 0 ? $_POST : null
 		);
+
+		if(is_null($serverRequest->getParsedBody()))
+			$serverRequest->setParsedBody($serverRequest->parseBody());
+
+		return $serverRequest;
 	}
 
 	// GETTERS
@@ -85,8 +100,8 @@ class ServerRequest extends Request implements ServerRequestInterface{
 	public function getQueryParams(): array{ return $this->queryParams; }
 	public function getCookieParams(): array{ return $this->cookies; }
 	public function getUploadedFiles(): array{ return $this->uploadedFiles;	}
-	public function getParsedBody(): mixed{
-		throw new NotImplementedException();
+	public function getParsedBody(): null|array|object{
+		return $this->parsedBody;
 	}
 
 	public function getAttributes(): array{ return $this->attributes; }
@@ -122,6 +137,9 @@ class ServerRequest extends Request implements ServerRequestInterface{
 
 		$this->uploadedFiles = $uploadedFiles;
 	}
+	private function setParsedBody(null|array|object $parsedBody): void{
+		$this->parsedBody = $parsedBody;
+	}
 
 	private function setAttribute(string $name, mixed $value): void{
 		$this->attributes[$name] = $value;
@@ -141,7 +159,7 @@ class ServerRequest extends Request implements ServerRequestInterface{
 		return $this->with("uploadedFiles", $uploadedFiles);
 	}
 	public function withParsedBody($data): static{
-		throw new NotImplementedException();
+		return $this->with("parsedBody", $data);
 	}
 
 	public function withAttribute(string $name, mixed $value): static{
@@ -155,5 +173,16 @@ class ServerRequest extends Request implements ServerRequestInterface{
 		$new = clone $this;
 		$new->removeAttribute($name);
 		return $new;
+	}
+
+	// FUNCTIONS
+	private function parseBody(): null|array|object{
+		return match($this->getHeader("Content-Type")[0] ?? null){
+			"application/x-www-form-urlencoded",
+				"multipart/form-data" => $_POST,
+			"application/json"
+				=> json_decode($this->getBody()->getContents(), true),
+			default => null
+		};
 	}
 }

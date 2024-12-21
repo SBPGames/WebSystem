@@ -4,7 +4,6 @@ namespace SBPGames\Framework\Message;
 
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
-use SBPGames\Framework\Exception\NotImplementedException;
 
 /**
  * @package SBPGames\Framework\Message
@@ -19,11 +18,20 @@ abstract class Message implements MessageInterface{
 	public const PROTOCOL_VERSION_PATTERN = "/^[0-9]\\.[0-9]$/";
 
 	private float $protocolVersion;
+	private StreamInterface $body;
 
 	/** @param array<string, string[]> $headers */
-	public function __construct(float $version = 1.1, array $headers = []){
-		$this->setProtocolVersion($version);
+	public function __construct(
+		float $version = 1.1,
+		array $headers = [],
+		StreamInterface $body = new FileStream(
+			FileStream::PHP_TEMPORATY_STREAM_URI
+		)
+	){
 		$this->__constructWithHeadersTrait($headers);
+
+		$this->setProtocolVersion($version);
+		$this->setBody($body);
 	}
 
 	// GETTERS
@@ -33,10 +41,7 @@ abstract class Message implements MessageInterface{
 	public function getProtocolVersionf(): float{
 		return $this->protocolVersion;
 	}
-
-	public function getBody(): StreamInterface{
-		throw new NotImplementedException();
-	}
+	public function getBody(): StreamInterface{ return $this->body; }
 
 	// SETTERS
 	private function setProtocolVersion(string|float $version): void{
@@ -44,14 +49,17 @@ abstract class Message implements MessageInterface{
 
 		$this->protocolVersion = floatval($version);
 	}
+	private function setBody(StreamInterface $body): void{
+		$this->body = $body;
+	}
 
 	// IMMUTABLE SETTERS
 	public function withProtocolVersion(string|float $version): static{
 		return $this->with("protocolVersion", $version);
 	}
-
-	public function withBody(StreamInterface $stream): static{
-		throw new NotImplementedException();
+	public function withBody(StreamInterface $body): static{
+		$this->getBody()->close();
+		return $this->with("body", $body);
 	}
 
 	// FUNCTIONS

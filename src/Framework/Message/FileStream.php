@@ -10,6 +10,10 @@ use Psr\Http\Message\StreamInterface;
  */
 class FileStream implements StreamInterface{
 
+	public const PHP_INPUT_STREAM_URI = "php://input";
+	public const PHP_OUTPUT_STREAM_URI = "php://output";
+	public const PHP_TEMPORATY_STREAM_URI = "php://temp";
+
 	private $stream;
 
 	public function __construct(string $filename, string $mode = ""){
@@ -17,8 +21,15 @@ class FileStream implements StreamInterface{
 	}
 
 	// CONSTRUCTORS
-	public static function fromInput(){ return new static("php://input"); }
-	public static function fromOutput(){ return new static("php://output"); }
+	public static function fromInput(){
+		return new static(self::PHP_INPUT_STREAM_URI);
+	}
+	public static function fromOutput(){
+		return new static(self::PHP_OUTPUT_STREAM_URI);
+	}
+	public static function fromTemp(){
+		return new static(self::PHP_TEMPORATY_STREAM_URI);
+	}
 
 	// GETTERS
 	private function getStream(){ return $this->stream; }

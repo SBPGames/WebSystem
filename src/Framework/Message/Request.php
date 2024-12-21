@@ -3,6 +3,7 @@
 namespace SBPGames\Framework\Message;
 
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 
 /**
@@ -24,9 +25,12 @@ class Request extends Message implements RequestInterface{
 		float $version = 1.1,
 		UriInterface $uri = new Uri(),
 		Method $method = Method::GET,
-		array $headers = []
+		array $headers = [],
+		StreamInterface $body = new FileStream(
+			FileStream::PHP_OUTPUT_STREAM_URI
+		)
 	){
-		parent::__construct($version, $headers);
+		parent::__construct($version, $headers, $body);
 
 		$this->setUri($uri);
 		$this->setMethodCase($method);
