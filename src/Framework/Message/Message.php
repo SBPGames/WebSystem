@@ -44,12 +44,12 @@ abstract class Message implements MessageInterface{
 	public function getBody(): StreamInterface{ return $this->body; }
 
 	// SETTERS
-	private function setProtocolVersion(string|float $version): void{
+	protected function setProtocolVersion(string|float $version): void{
 		Message::assertProtocolVersion($version);
 
 		$this->protocolVersion = floatval($version);
 	}
-	private function setBody(StreamInterface $body): void{
+	protected function setBody(StreamInterface $body): void{
 		$this->body = $body;
 	}
 

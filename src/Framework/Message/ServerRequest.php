@@ -113,16 +113,16 @@ class ServerRequest extends Request implements ServerRequestInterface{
 	}
 
 	// SETTERS
-	private function setServerParams(array $serverParams): void{
+	protected function setServerParams(array $serverParams): void{
 		$this->serverParams = $serverParams;
 	}
-	private function setQueryParams(array $query): void{
+	protected function setQueryParams(array $query): void{
 		$this->queryParams = $query;
 	}
-	private function setCookieParams(array $cookies): void{
+	protected function setCookieParams(array $cookies): void{
 		$this->cookies = $cookies;
 	}
-	private function setUploadedFiles(array $uploadedFiles): void{
+	protected function setUploadedFiles(array $uploadedFiles): void{
 		foreach($uploadedFiles as $name => $uf){
 			if(!is_int($name) || !is_string($name)
 				|| !($uf instanceof UploadedFileInterface)
@@ -136,14 +136,14 @@ class ServerRequest extends Request implements ServerRequestInterface{
 
 		$this->uploadedFiles = $uploadedFiles;
 	}
-	private function setParsedBody(null|array|object $parsedBody): void{
+	protected function setParsedBody(null|array|object $parsedBody): void{
 		$this->parsedBody = $parsedBody;
 	}
 
-	private function setAttribute(string $name, mixed $value): void{
+	protected function setAttribute(string $name, mixed $value): void{
 		$this->attributes[$name] = $value;
 	}
-	private function removeAttribute(string $name): void{
+	protected function removeAttribute(string $name): void{
 		unset($this->attributes[$name]);
 	}
 

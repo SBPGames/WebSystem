@@ -57,7 +57,7 @@ class Request extends Message implements RequestInterface{
 	}
 
 	// SETTERS
-	private function setUri(UriInterface $uri): void{
+	protected function setUri(UriInterface $uri): void{
 		if(strlen($uri->getHost()) > 0){
 			$value = $uri->getHost();
 
@@ -73,11 +73,11 @@ class Request extends Message implements RequestInterface{
 		$this->uri = $uri;
 	}
 
-	private function setMethodCase(Method $method): void{
+	protected function setMethodCase(Method $method): void{
 		$this->method = $method;
 		$this->methodString = null;
 	}
-	private function setMethod(string $method): void{
+	protected function setMethod(string $method): void{
 		if(($met = Method::tryFrom(strtoupper($method))) === null)
 			throw new \UnexpectedValueException(
 				"Invalid or unsupported method ($method);"
@@ -88,7 +88,7 @@ class Request extends Message implements RequestInterface{
 			$this->methodString = $method;
 	}
 
-	public function setRequestTarget(string $requestTarget){
+	protected function setRequestTarget(string $requestTarget){
 		$this->requestTarget = $requestTarget;
 	}
 
@@ -99,8 +99,8 @@ class Request extends Message implements RequestInterface{
 		$hostHeaderValue = $this->getHeader("Host");
 
 		$new = $this->with("uri", $uri);
-		if(count($hostHeaderValue) > 0)
-			$new = $this->withHeader("Host", $hostHeaderValue);
+		if(count($hostHeaderValue) > 0 && !$preserveHost)
+			$new = $new->withHeader("Host", $hostHeaderValue);
 		return $new;
 	}
 

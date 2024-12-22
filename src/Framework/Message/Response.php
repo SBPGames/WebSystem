@@ -42,8 +42,8 @@ class Response extends Message implements ResponseInterface{
 	}
 
 	// SETTERS
-	public function setStatus(Status $status): void{ $this->status = $status; }
-	public function setStatusCode(int $code): void{
+	protected function setStatus(Status $status): void{ $this->status = $status; }
+	protected function setStatusCode(int $code): void{
 		if(($status = Status::tryFrom($code)) === null)
 			throw new \UnexpectedValueException(
 				"Invalid or unsupported status code ($code);"
@@ -51,7 +51,7 @@ class Response extends Message implements ResponseInterface{
 
 		$this->setStatus($status);
 	}
-	public function setReasonPhrase(string $reasonPhrase): void{
+	protected function setReasonPhrase(string $reasonPhrase): void{
 		if(!is_null($this->getStatus())
 			&& $reasonPhrase === $this->getStatus()->getReasonPhrase()
 		)

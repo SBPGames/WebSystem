@@ -47,13 +47,13 @@ trait WithHeadersTrait{
 	}
 
 	// SETTERS
-	private function setHeader(string $name, array $value): void{
+	protected function setHeader(string $name, array $value): void{
 		self::assertHeaderName($name);
 		foreach($value as $v) self::assertHeaderValue($v);
 
 		$this->headers[$name] = $value;
 	}
-	private function removeHeader(string $name): void{
+	protected function removeHeader(string $name): void{
 		self::assertHeaderName($name);
 
 		unset($this->headers[$this->getHeaderName($name)]);

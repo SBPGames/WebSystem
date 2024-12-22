@@ -103,7 +103,7 @@ class Uri implements UriInterface{
 	public function getFragment(): string{ return $this->fragment; }
 
 	// SETTERS
-	private function setSchemeCase(?Scheme $scheme): void{
+	protected function setSchemeCase(?Scheme $scheme): void{
 		if(!is_null($this->getPort())
 			&& isset($scheme)
 			&& $this->getPort() === $scheme->getStandardPort()
@@ -111,7 +111,7 @@ class Uri implements UriInterface{
 
 		$this->scheme = $scheme;
 	}
-	private function setScheme(string $scheme): void{
+	protected function setScheme(string $scheme): void{
 		if(strlen($scheme) === 0){
 			unset($this->scheme);
 			return;
@@ -126,11 +126,11 @@ class Uri implements UriInterface{
 	}
 
 	// Authority
-	private function setHost(string $host): void{
+	protected function setHost(string $host): void{
 		self::assertHost($host);
 		$this->host = $host;
 	}
-	private function setPort(?int $port): void{
+	protected function setPort(?int $port): void{
 		if(is_null($port) || (
 			!is_null($this->getSchemeCase())
 			&& $port === $this->scheme->getStandardPort()
@@ -144,19 +144,19 @@ class Uri implements UriInterface{
 	}
 
 	// Path
-	private function setPath(string $path): void{
+	protected function setPath(string $path): void{
 		$path = self::urlencode($path);
 		self::assertPath($path);
 
 		$this->path = $path;
 	}
-	private function setQuery(string $query): void{
+	protected function setQuery(string $query): void{
 		$query = self::urlencode($query, self::QUERY_ALLOWED_CHARACTERS);
 		self::assertQuery($query);
 
 		$this->query = $query;
 	}
-	private function setFragment(string $fragment): void{
+	protected function setFragment(string $fragment): void{
 		$fragment = self::urlencode($fragment,
 			self::FRAGMENT_ALLOWED_CHARACTERS
 		);
