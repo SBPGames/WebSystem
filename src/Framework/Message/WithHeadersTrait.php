@@ -63,7 +63,8 @@ trait WithHeadersTrait{
 	public function withHeader(string $name, mixed $value): static{
 		if(is_string($value)) $value = [$value];
 
-		if(sizeof(array_diff($this->getHeader($name), $value)) === 0)
+		$headers = $this->getHeader($name);
+		if(count($headers) !== 0 && count(array_diff($headers, $value)) === 0)
 			return $this;
 
 		$new = clone $this;
