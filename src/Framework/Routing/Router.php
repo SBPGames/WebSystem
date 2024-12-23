@@ -3,10 +3,6 @@
 namespace SBPGames\Framework\Routing;
 
 use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\UriInterface;
-use SBPGames\Framework\Controller;
-use SBPGames\Framework\Message\Method;
-use UnexpectedValueException;
 
 /**
  * @package SBPGames\Framework\Routing
