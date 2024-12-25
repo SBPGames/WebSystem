@@ -52,9 +52,10 @@ class Router{
 		else if($this->hasController($controller, $basePath))
 			throw new \RuntimeException("$controller already added;");
 
+		// Registering
 		if(!$this->hasBasePath($basePath)) $this->routes[$basePath] = [];
-		$this->routes[$basePath][$controller] = call_user_func(
-			[$controller, "getRoutes"]
+		$this->routes[$basePath][$controller] = array_values(
+			call_user_func([$controller, "getRoutes"])
 		);
 	}
 

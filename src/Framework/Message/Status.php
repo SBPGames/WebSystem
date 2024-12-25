@@ -30,6 +30,7 @@ enum Status: int{
 	case NOT_FOUND = 404;
 	case METHOD_NOT_ALLOWED = 405;
 	case IM_A_TEAPOT = 418; // Server can't brew coffee because it's a teapot.
+	case MISDIRECTED_REQUEST = 421; // Wrong server, scheme or authority.
 
 	// Server Error
 	case INTERNAL_ERROR = 500;
@@ -60,6 +61,7 @@ enum Status: int{
 			404 => "Not Found",
 			405 => "Method Not Allowed",
 			418 => "I'm a teapot",
+			421 => "Misdirected Request",
 
 			// Server Error
 			500 => "Internal Server Error",
