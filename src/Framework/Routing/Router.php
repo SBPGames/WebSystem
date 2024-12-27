@@ -62,11 +62,11 @@ class Router{
 	// FUNCTIONS
 	/** @return string[] */
 	private function matchBasePath(string $path): array{
-		return array_filter($this->getBasePaths(),
+		return array_values(array_filter($this->getBasePaths(),
 			function(string $basePath) use ($path){
 				return str_starts_with($path, $basePath);
 			}
-		);
+		));
 	}
 	private function subBasePath(string $basePath, string $path): ?string{
 		return sprintf("/%s", ltrim(substr($path, strlen($basePath)), "/"));
