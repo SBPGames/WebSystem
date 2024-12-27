@@ -119,7 +119,8 @@ class Router{
 				&& $result->getMatching() === Matching::NONE
 			)
 				$result = new RoutingResult($matching, $controller,
-					$route->getCallback($request->getMethod())
+					$route->getCallback($request->getMethod()),
+					$route->matchURI($request->getUri())
 				);
 
 			$j++;

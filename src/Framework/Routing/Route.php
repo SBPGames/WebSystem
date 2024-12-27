@@ -3,6 +3,7 @@
 namespace SBPGames\Framework\Routing;
 
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\UriInterface;
 
 /**
  * @package SBPGames\Framework\Routing
@@ -21,6 +22,7 @@ class Route{
 	}
 
 	// GETTERS
+	private function getPathRegEx(): string{ return $this->pathRegEx; }
 	/** @return string[] */
 	private function getMethods(): array{ return array_keys($this->callbacks); }
 	private function hasMethod(string $method): bool{
@@ -32,12 +34,21 @@ class Route{
 	}
 
 	// FUNCTIONS
-	public function matchRequest(RequestInterface $request): Matching{
-		$match = preg_match($this->pathRegEx, $request->getUri()->getPath(),
-			$urlParams
-		);
+	/** @return ?array<string, string> */
+	public function matchURI(UriInterface $uri): ?array{
+		$match = preg_match($this->getPathRegEx(), $uri->getPath(), $urlParams);
+		
+		foreach(array_keys($urlParams) as $param)
+			if(is_int($param))
+				unset($urlParams[$param]);
 
-		if(is_int($match) && $match === 1){
+		return is_int($match) && $match === 1 ? $urlParams : null;
+	}
+
+	public function matchRequest(RequestInterface $request): Matching{
+		$match = $this->matchURI($request->getUri());
+
+		if(is_array($match)){
 			if($this->hasMethod($request->getMethod()))
 				return Matching::FULL;
 			else

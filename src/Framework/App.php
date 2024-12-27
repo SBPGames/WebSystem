@@ -88,9 +88,9 @@ abstract class App{
 	public function processRequest(
 		ServerRequestInterface $request, ResponseInterface $response
 	): ResponseInterface{
-		$route = $this->getRouter()->matchRequest($request);
+		$result = $this->getRouter()->matchRequest($request);
 
-		switch($route->getMatching()){
+		switch($result->getMatching()){
 			case Matching::NONE:
 				return $response->withStatus(Status::NOT_FOUND->value);
 			case Matching::PATH_ONLY:
@@ -98,11 +98,11 @@ abstract class App{
 			default:
 				try{
 					$controller = $this->retrieveControllerInstance(
-						$route->getController()
+						$result->getController()
 					);
 
 					$m = $this->retrieveControllerMethod(
-						$controller, $route->getMethod()
+						$controller, $result->getMethod()
 					);
 				}catch(\UnexpectedValueException|\ReflectionException $e){
 					return $this->processRetrievingException(
@@ -113,6 +113,9 @@ abstract class App{
 						$request, $e, $response
 					);
 				}
+
+				foreach($result->getURLParams() as $param => $value)
+					$request = $request->withAttribute($param, $value);
 
 				try{
 					return $m->invoke($controller, $request, $response);
