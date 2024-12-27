@@ -40,7 +40,7 @@ abstract class App{
 		return $regNames;
 	}
 
-	private function getContext(): WebSystem{ return $this->context; }
+	protected function getContext(): WebSystem{ return $this->context; }
 	private function getRouter(): Router{ return $this->router; }
 
 	// FUNCTIONS
@@ -116,7 +116,7 @@ abstract class App{
 
 				try{
 					return $m->invoke($controller, $request, $response);
-				}catch(\TypeError|\ReflectionException $e){
+				}catch(\ReflectionException $e){
 					return $this->processInvocationException(
 						$request, $e, $response
 					);

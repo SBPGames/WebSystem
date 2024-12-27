@@ -8,6 +8,8 @@ namespace SBPGames\Framework;
  */
 abstract class Controller{
 
+	public function __construct(){}
+
 	// GETTERS
 	public static function getBasePath(): string{ return "/"; }
 	/** @return Route[] */

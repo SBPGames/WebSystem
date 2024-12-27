@@ -2,11 +2,9 @@
 
 namespace SBPGames\Framework;
 
-use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use ReflectionException;
 use SBPGames\Framework\Message\Status;
 
 /**
@@ -61,7 +59,6 @@ final class WebSystem{
 				);
 			}
 
-			$i = 1/0;
 			return $app->processRequest($request, $response);
 		}else
 			return $this->processAppNotFound($request, $response);
