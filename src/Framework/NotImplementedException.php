@@ -1,9 +1,9 @@
 <?php
 
-namespace SBPGames\Framework\Exception;
+namespace SBPGames\Framework;
 
 /**
- * @package SBPGames\Framework\Exception
+ * @package SBPGames\Framework
  * @author Xibitol <contact@pimous.dev>
  */
 class NotImplementedException extends \BadMethodCallException{
