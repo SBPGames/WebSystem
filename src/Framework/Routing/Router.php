@@ -60,32 +60,49 @@ class Router{
 	}
 
 	// FUNCTIONS
-	private function matchBasePath(string $path): ?string{
-		$basePaths = $this->getBasePaths();
-
-		$i = -1;
-		while(++$i < count($basePaths)
-			&& !str_starts_with($path, $basePaths[$i])
+	/** @return string[] */
+	private function matchBasePath(string $path): array{
+		return array_filter($this->getBasePaths(),
+			function(string $basePath) use ($path){
+				return str_starts_with($path, $basePath);
+			}
 		);
-
-		return $basePaths[$i] ?? null;
 	}
 	private function subBasePath(string $basePath, string $path): ?string{
-		return sprintf("/%s",ltrim(substr($path, strlen($basePath)), "/"));
+		return sprintf("/%s", ltrim(substr($path, strlen($basePath)), "/"));
 	}
 
 	public function matchRequest(RequestInterface $request): RoutingResult{
 		$uri = $request->getUri();
 
-		// Matches base path.
-		$basePath = $this->matchBasePath($uri->getPath());
-		if(!isset($basePath)) return new RoutingResult();
+		$basePaths = $this->matchBasePath($uri->getPath());
+		$result = new RoutingResult();
 
-		$request = $request->withUri(
-			$uri->withPath($this->subBasePath($basePath, $uri->getPath()))
+		$i = 0;
+		do{
+			$basePath = $basePaths[$i];
+			$request = $request->withUri(
+				$uri->withPath($this->subBasePath($basePath, $uri->getPath()))
+			);
+
+			$r = $this->matchTrimmedRequest($request, $basePath);
+			if($r->getMatching() === Matching::FULL ||
+				$r->getMatching() === Matching::PATH_ONLY
+				&& $result->getMatching() === Matching::NONE
+			)
+				$result = $r;
+
+			$i++;
+		}while($i < count($basePaths)
+			&& $result->getMatching() !== Matching::FULL
 		);
 
-		// Matches base path's routes of controllers.
+		return $result;
+	}
+
+	private function matchTrimmedRequest(
+		RequestInterface $request, string $basePath
+	): RoutingResult{
 		$controllers = $this->getControllers($basePath);
 		$result = new RoutingResult();
 
@@ -110,7 +127,7 @@ class Router{
 				$i++;
 				$j = 0;
 			}
-		}while($i < count($controllers));
+		}while($i < count($controllers) && $matching !== Matching::FULL);
 
 		return $result;
 	}
