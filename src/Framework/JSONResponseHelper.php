@@ -27,7 +27,7 @@ class JSONResponseHelper{
 	private function makeDataSafe(array $data): array{
 		foreach($data as $key => $value){
 			if(is_array($value)) $data[$key] = $this->makeDataSafe($value);
-			elseif(is_int($value) && $value > self::JS_MAX_SAFE_INTEGER)
+			else if(is_int($value) && $value > self::JS_MAX_SAFE_INTEGER)
 				$data[$key] = strval($value);
 		}
 
