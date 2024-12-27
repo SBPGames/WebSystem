@@ -67,7 +67,7 @@ class Request extends Message implements RequestInterface{
 					Scheme::tryFrom($uri->getScheme())->getStandardPort()
 			)) $value .= sprintf(":%d", $uri->getPort());
 
-			$this->withHeader("Host", $value);
+			$this->setHeader("Host", [$value]);
 		}
 
 		$this->uri = $uri;
@@ -99,7 +99,7 @@ class Request extends Message implements RequestInterface{
 		$hostHeaderValue = $this->getHeader("Host");
 
 		$new = $this->with("uri", $uri);
-		if(count($hostHeaderValue) > 0 && !$preserveHost)
+		if(count($hostHeaderValue) > 0 && $preserveHost)
 			$new = $new->withHeader("Host", $hostHeaderValue);
 		return $new;
 	}
