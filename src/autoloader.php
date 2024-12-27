@@ -114,7 +114,7 @@ function loadClass(
 
 	// Calling require_once and prevent its errors.
 	try{
-		set_error_handler(function($_, $__, $___, $____){}, E_WARNING);
+		set_error_handler(function($_, $__){}, E_WARNING);
 
 		@require_once $path;
 	}catch(\Error $e){
