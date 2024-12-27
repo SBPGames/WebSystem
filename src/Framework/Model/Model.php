@@ -20,7 +20,7 @@ abstract class Model{
 	}
 
 	// CONSTRUCTORS
-	protected static function fromArray(array $values): static{
+	public static function fromArray(array $values): static{
 		return new static();
 	}
 
@@ -28,12 +28,22 @@ abstract class Model{
 	protected static function getTableName(): string{ return ""; }
 	/** @var string[] */
 	protected static function getIdentifierFields(): array{ return []; }
+	/** @var string[] */
+	private static function getIdentifierNames(): array{
+		return array_values(static::getIdentifierFields());
+	}
+	private static function hasIdentifierField(string $identifier): bool{
+		return in_array($identifier, static::getIdentifierNames());
+	}
 
-	public function getIdentifiers(): array{ return $this->identifiers; }
+	protected function getIdentifiers(): array{ return $this->identifiers; }
+	protected function getOneIdentifier(string $identifier): mixed{
+		return $this->identifiers[$identifier];
+	}
 	public function isPublished(): bool{ return $this->published; }
 
 	// SETTERS
-	private function setIdentifier(string $key, mixed $value): void{
+	protected function setIdentifier(string $key, mixed $value): void{
 		$this->identifiers[$key] = $value;
 	}
 	private function togglePublished(?bool $published = null): void{
@@ -54,7 +64,9 @@ abstract class Model{
 
 		// Checks filter/sort keys existance.
 		foreach(array_keys(array_merge($filters, $sortKeys)) as $key)
-			if(!$reflecClass->hasProperty($key))
+			if(!$reflecClass->hasProperty($key)
+				&& !static::hasIdentifierField($key)
+			)
 				throw new ModelException(sprintf(
 					"%s's field \"%s\" used as a filter or a sort key "
 					."doesn't exist;",
@@ -65,18 +77,18 @@ abstract class Model{
 	}
 
 	/** @param array<string, mixed> $identifiers */
-	public static function findByIdentifiers(DatabaseService $database,
+	protected static function findByIdentifiers(DatabaseService $database,
 		array $identifiers
 	): ?Model{
 		// Checks identifiers existence.
 		foreach(array_keys($identifiers) as $key)
-			if(!in_array($key, static::getIdentifierFields()))
+			if(!static::hasIdentifierField($key))
 				throw new ModelException(sprintf(
 					"%s's field \"%s\" used as an identifier key but isn't;",
 					static::class, $key
 				));
 
-		if(count($identifiers) !== count(static::getIdentifierFields()))
+		if(count($identifiers) !== count(static::getIdentifierNames()))
 			throw new ModelException(sprintf(
 				"%s's identifier keys are missing to fully identify it;",
 				static::class
@@ -87,7 +99,7 @@ abstract class Model{
 
 	// LIFECYCLE FUNCTIONS
 	/** @param array<string, mixed> $values */
-	protected abstract function onFetch(array $values);
+	protected function onFetch(DatabaseService $database, array $values){}
 
 	// DATABASE FUNCTIONS
 	/**
@@ -107,7 +119,7 @@ abstract class Model{
 		if($page < 0 || $limit <= 0 || $limit > 32)
 			throw new ModelException(
 				"Page number cannot be negative or Amount limit cannot be "
-				."either negative or zero, and cannot be upper than 32."
+				."either negative or zero, and cannot be more than 32;"
 			);
 
 		// Fetches data from service.
@@ -120,14 +132,14 @@ abstract class Model{
 			}, $filters)
 		);
 
-		return array_map(function(array $data){
+		return array_map(function(array $data) use ($database){
 			$obj = static::fromArray($data);
 
-			foreach(static::getIdentifierFields() as $field)
+			foreach(static::getIdentifierNames() as $field)
 				$obj->setIdentifier($field, $data[$field]);
 			$obj->togglePublished(true);
 
-			$obj->onFetch($data);
+			$obj->onFetch($database, $data);
 
 			return $obj;
 		}, $output);
