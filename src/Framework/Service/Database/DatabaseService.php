@@ -2,8 +2,6 @@
 
 namespace SBPGames\Framework\Service\Database;
 
-use PDOStatement;
-use RuntimeException;
 use SBPGames\Framework\Service\Service;
 
 /**
@@ -38,7 +36,7 @@ class DatabaseService extends Service{
 	public function getConfigFields(): array{
 		return ["driver", "host", "port", "user", "password", "dbname"];
 	}
-	public function getDSNFields(): array{
+	private function getDSNFields(): array{
 		return ["host", "port", "dbname"];
 	}
 

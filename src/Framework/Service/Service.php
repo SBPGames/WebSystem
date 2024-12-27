@@ -12,8 +12,6 @@ abstract class Service{
 
 	public function __construct(string $identifier){
 		$this->identifier = $identifier;
-
-		printf("Constructed service %s.\n", static::class);
 	}
 
 	// GETTERS
@@ -26,7 +24,5 @@ abstract class Service{
 
 	// LIFECYCLE FUNCTIONS
 	/** @param array<string, mixed> $config */
-	public function init(array $config): void{
-		printf("Initialized service %s.\n", static::class);
-	}
+	public function init(array $config): void{}
 }
