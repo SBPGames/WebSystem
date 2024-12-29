@@ -29,6 +29,8 @@ abstract class Model{
 	/** @var string[] */
 	protected static function getIdentifierFields(): array{ return []; }
 	/** @var string[] */
+	protected static function getAutomaticIdentifiers(): array{ return []; }
+	/** @var string[] */
 	private static function getIdentifierNames(): array{
 		return array_values(static::getIdentifierFields());
 	}
@@ -44,6 +46,12 @@ abstract class Model{
 
 	// SETTERS
 	protected function setIdentifier(string $key, mixed $value): void{
+		if(!is_null($this->getOneIdentifier($key)))
+			throw new ModelException(sprintf(
+				"%s's %s identifier cannot be modified;",
+				static::class, $key
+			));
+
 		$this->identifiers[$key] = $value;
 	}
 	private function togglePublished(?bool $published = null): void{
@@ -103,12 +111,8 @@ abstract class Model{
 
 	// DATABASE FUNCTIONS
 	/**
-	 * @param DatabaseService $database 
-	 * @param array<string, mixed> $filters 
-	 * @param array<string, bool> $sortKeys Is in descending order
-	 * ?
-	 * @param int $page
-	 * @param int $limit
+	 * @param array<string, mixed> $filters
+	 * @param array<string, bool> $sortKeys `true` is ASC and `false` is DESC.
 	 * @return static[]
 	 */
 	private static function select(DatabaseService $database,
@@ -135,7 +139,7 @@ abstract class Model{
 		return array_map(function(array $data) use ($database){
 			$obj = static::fromArray($data);
 
-			foreach(static::getIdentifierNames() as $field)
+			foreach(static::getAutomaticIdentifiers() as $field)
 				$obj->setIdentifier($field, $data[$field]);
 			$obj->togglePublished(true);
 
