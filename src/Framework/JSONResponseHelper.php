@@ -35,13 +35,17 @@ class JSONResponseHelper{
 	}
 
 	// TODO: Move this implementation to a new Response subclass.
-	public function write(array $data): ResponseInterface{
+	public function write(
+		array $data, bool $created = false
+	): ResponseInterface{
 		$this->getResponse()->getBody()->rewind();
 		$this->getResponse()->getBody()->write(json_encode(
 			$this->makeDataSafe($data)
 		));
 
-		return $this->getResponse()->withStatus(Status::OK->value);
+		return $this->getResponse()->withStatus(
+			$created ? Status::CREATED->value : Status::OK->value
+		);
 	}
 	// TODO: Move this implementation to a new Response subclass (RFC 7807).
 	public function writeError(
