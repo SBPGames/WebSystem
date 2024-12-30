@@ -8,9 +8,11 @@ namespace SBPGames\Framework\Model;
  */
 class SQLHelper{
 
-	private const SELECT_FORMAT = "SELECT DISTINCT * FROM %s%s%s LIMIT %u, %u;";
-	private const WHERE_CLAUSE_FORMAT = " WHERE %s";
-	private const ORDERBY_CLAUSE_FORMAT = " ORDER BY %s";
+	private const SELECT_FORMAT = "SELECT DISTINCT * FROM %s %s %s LIMIT %u, %u;";
+	private const WHERE_CLAUSE_FORMAT = "WHERE %s";
+	private const ORDERBY_CLAUSE_FORMAT = "ORDER BY %s";
+
+	private const INSERT_FORMAT = "INSERT INTO %s(%s) VALUES (%s) RETURNING *;";
 
 	private string $tableName;
 
@@ -50,6 +52,19 @@ class SQLHelper{
 			$this->getTableName(),
 			$filtersPart, $sortKeysPart,
 			$page*$limit, $limit
+		);
+	}
+
+	/** @param string[] $columns */
+	public function generateInsert(array $columns){
+		return sprintf(static::INSERT_FORMAT,
+			$this->getTableName(),
+			implode(", ", $columns),
+			implode(", ", array_map(
+				function(string $k): string{
+					return sprintf(":%s", $k);
+				}, $columns
+			))
 		);
 	}
 }

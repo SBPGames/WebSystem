@@ -10,7 +10,7 @@ use SBPGames\Framework\Service\Database\DatabaseService;
  */
 abstract class Model{
 
-	/** @var array<string, mixed> */
+	/** @var array<string, null|bool|int|float|string> */
 	private array $identifiers = [];
 	private bool $published = false;
 
@@ -20,8 +20,51 @@ abstract class Model{
 	}
 
 	// CONSTRUCTORS
+	/** @param array<string, null|bool|int|float|string|object> $values */
 	public static function fromArray(array $values): static{
-		return new static();
+		$rClass = new \ReflectionClass(static::class);
+		$args = [];
+
+		foreach($rClass->getConstructor()->getParameters() as $param){
+			$value = $values[$param->getName()] ?? null;
+
+			if(
+				!array_key_exists($param->getName(), $values)
+					&& !$param->isOptional()
+				|| array_key_exists($param->getName(), $values)
+					&& is_null($value)
+					&& !$param->allowsNull()
+			)
+				throw new ModelException(sprintf(
+					"%s field is mandatory and cannot be null;",
+					$param->getName()
+				));
+
+			if(!is_null($value) && !is_object($value) && $param->hasType()){
+				$rParamType = $param->getType();
+				$rTypes = match($rParamType::class){
+					\ReflectionNamedType::class => [$rParamType],
+					\ReflectionUnionType::class => $rParamType->getTypes(),
+					\ReflectionIntersectionType::class => []
+				};
+
+				static::assertFieldType($param->getName(), $value,
+					array_map(function(\ReflectionNamedType $rType){
+						return $rType->getName();
+					}, array_filter($rTypes,
+						function(\ReflectionType $rType): bool{
+							return $rType instanceof \ReflectionNamedType
+								&& $rType->isBuiltin();
+						}
+					))
+				);
+			}
+
+			if(array_key_exists($param->getName(), $values))
+				$args[$param->getName()] = $value;
+		}
+
+		return $rClass->newInstanceArgs($args);
 	}
 
 	// GETTERS
@@ -60,7 +103,7 @@ abstract class Model{
 
 	// FUNCTIONS
 	/**
-	 * @param array<string, mixed> $filters
+	 * @param array<string, null|bool|int|float|string> $filters
 	 * @param array<string, bool> $sortKeys `true` is ASC and `false` is DESC.
 	 * @return static[]
 	 */
@@ -84,7 +127,7 @@ abstract class Model{
 		return static::select($database, $filters, $sortKeys, $page, $limit);
 	}
 
-	/** @param array<string, mixed> $identifiers */
+	/** @param array<string, bool|int|float|string> $identifiers */
 	protected static function findByIdentifiers(DatabaseService $database,
 		array $identifiers
 	): ?Model{
@@ -105,13 +148,25 @@ abstract class Model{
 		return static::select($database, $identifiers, [], 0, 1)[0] ?? null;
 	}
 
+	/** @return array<string, null|bool|int|float|string> */
+	public abstract function toEntry(): array;
+
+	public function publish(DatabaseService $database): void{
+		if($this->isPublished())
+			throw new ModelException(sprintf(
+				"%s already published.", static::class
+			));
+
+		$this->published = $this->insert($database);
+	}
+
 	// LIFECYCLE FUNCTIONS
-	/** @param array<string, mixed> $values */
+	/** @param array<string, null|bool|int|float|string> $values */
 	protected function onFetch(DatabaseService $database, array $values){}
 
 	// DATABASE FUNCTIONS
 	/**
-	 * @param array<string, mixed> $filters
+	 * @param array<string, null|bool|int|float|string> $filters
 	 * @param array<string, bool> $sortKeys `true` is ASC and `false` is DESC.
 	 * @return static[]
 	 */
@@ -131,9 +186,7 @@ abstract class Model{
 			(new SQLHelper(static::getTableName()))->generateSelect(
 				$filters, $sortKeys, $page, $limit
 			),
-			array_map(function(mixed $v): mixed{
-				return $v instanceof \BackedEnum ? $v->value : $v;
-			}, $filters)
+			$filters
 		);
 
 		return array_map(function(array $data) use ($database){
@@ -147,5 +200,55 @@ abstract class Model{
 
 			return $obj;
 		}, $output);
+	}
+
+	private function insert(DatabaseService $database): bool{
+		// Unset automatic identifiers
+		$values = $this->toEntry();
+		foreach(static::getAutomaticIdentifiers() as $field)
+			unset($values[$field]);
+
+		// Insert data into service.
+		$output = $database->fetch(
+			(new SQLHelper(static::getTableName()))->generateInsert(
+				array_keys($values), static::getAutomaticIdentifiers()
+			),
+			array_map(
+				function(null|bool|int|float|string $v): null|int|float|string{
+					return is_bool($v) ? intval($v) : $v;
+				},
+				$values
+			)
+		);
+
+		if(count($output) === 1){
+			foreach($output[0] as $field => $value)
+				$this->setIdentifier($field, $value);
+
+			$this->onFetch($database, $output[0]);
+		}
+
+		return count($output) === 1;
+	}
+
+	// ASSERTIONS
+	protected static function assertFieldType(
+		string $name, null|bool|int|float|string $value, string|array $types
+	){
+		$types = is_string($types) ? [$types] : array_values($types);
+
+		// Adapts type names to align them to gettype returns.
+		for($i = 0; $i < count($types); $i++)
+			$types[$i] = match($types[$i]){
+				"int" => "integer",
+				"bool" => "boolean",
+				"float" => "double",
+				default => $types[$i]
+			};
+
+		if(!in_array(gettype($value), $types))
+			throw new ModelException(sprintf(
+				"Invalid %s field type (Got %s);", $name, gettype($value)
+			));
 	}
 }
