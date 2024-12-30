@@ -14,7 +14,7 @@ developers of SBP Games use [VSCode](https://code.visualstudio.com/) and almost
 the same extensions, we use and keep there its settings and configured tasks as
 a development manager.
 
-> Version: v1.0.0-s.1
+> Version: v1.0.0-s.2
 
 ## Documentation
 _Soon..._
