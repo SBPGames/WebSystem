@@ -29,6 +29,8 @@ enum Status: int{
 	case FORBIDDEN = 403;
 	case NOT_FOUND = 404;
 	case METHOD_NOT_ALLOWED = 405;
+	case CONFLICT = 409; // Conflict with server state.
+	case UNSUPPORTED_MEDIA_TYPE = 415; // Missing, invalid or unsupported type.
 	case IM_A_TEAPOT = 418; // Server can't brew coffee because it's a teapot.
 	case MISDIRECTED_REQUEST = 421; // Wrong server, scheme or authority.
 
@@ -60,6 +62,8 @@ enum Status: int{
 			403 => "Forbidden",
 			404 => "Not Found",
 			405 => "Method Not Allowed",
+			409 => "Conflict",
+			415 => "Unsupported Media Type",
 			418 => "I'm a teapot",
 			421 => "Misdirected Request",
 
