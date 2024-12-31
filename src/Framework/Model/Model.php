@@ -20,7 +20,7 @@ abstract class Model{
 	}
 
 	// CONSTRUCTORS
-	/** @param array<string, null|bool|int|float|string|object> $values */
+	/** @param array<string, mixed> $values */
 	public static function fromArray(array $values): static{
 		$rClass = new \ReflectionClass(static::class);
 		$args = [];
@@ -159,6 +159,14 @@ abstract class Model{
 
 		$this->published = $this->insert($database);
 	}
+	public function save(DatabaseService $database): void{
+		if(!$this->isPublished())
+			throw new ModelException(sprintf(
+				"%s isn't published.", static::class
+			));
+
+		$this->update($database);
+	}
 
 	// LIFECYCLE FUNCTIONS
 	/** @param array<string, null|bool|int|float|string> $values */
@@ -222,8 +230,8 @@ abstract class Model{
 		);
 
 		if(count($output) === 1){
-			foreach($output[0] as $field => $value)
-				$this->setIdentifier($field, $value);
+			foreach(static::getAutomaticIdentifiers() as $field)
+				$this->setIdentifier($field, $output[0][$field]);
 
 			$this->onFetch($database, $output[0]);
 		}
@@ -231,15 +239,41 @@ abstract class Model{
 		return count($output) === 1;
 	}
 
+	private function update(DatabaseService $database): bool{
+		// Unset automatic identifiers
+		$values = $this->toEntry();
+		foreach(static::getAutomaticIdentifiers() as $field)
+			unset($values[$field]);
+
+		// Insert data into service.
+		$output = $database->fetch(
+			(new SQLHelper(static::getTableName()))->generateUpdate(
+				array_keys($values), static::getIdentifierNames()
+			),
+			array_map(
+				function(null|bool|int|float|string $v): null|int|float|string{
+					return is_bool($v) ? intval($v) : $v;
+				},
+				$this->toEntry()
+			)
+		);
+
+		if(count($output) === 1) $this->onFetch($database, $output[0]);
+
+		return count($output) === 1;
+	}
+
 	// ASSERTIONS
+	/** @param string|string[] $types */
 	protected static function assertFieldType(
-		string $name, null|bool|int|float|string $value, string|array $types
+		string $name, mixed $value, string|array $types
 	){
 		$types = is_string($types) ? [$types] : array_values($types);
 
 		// Adapts type names to align them to gettype returns.
 		for($i = 0; $i < count($types); $i++)
 			$types[$i] = match($types[$i]){
+				"null" => "NULL",
 				"int" => "integer",
 				"bool" => "boolean",
 				"float" => "double",

@@ -13,6 +13,8 @@ class SQLHelper{
 	private const ORDERBY_CLAUSE_FORMAT = "ORDER BY %s";
 
 	private const INSERT_FORMAT = "INSERT INTO %s(%s) VALUES (%s) RETURNING *;";
+	
+	private const UPDATE_FORMAT = "UPDATE %s SET %s WHERE %s;";
 
 	private string $tableName;
 
@@ -26,7 +28,7 @@ class SQLHelper{
 	// FUNCTIONS
 	public function generateSelect(
 		array $filters, array $sortKeys, int $page, int $limit
-	){
+	): string{
 		$filtersPart = "";
 		if(count($filters) > 0){
 			$filtersPart = sprintf(static::WHERE_CLAUSE_FORMAT,
@@ -56,7 +58,7 @@ class SQLHelper{
 	}
 
 	/** @param string[] $columns */
-	public function generateInsert(array $columns){
+	public function generateInsert(array $columns): string{
 		return sprintf(static::INSERT_FORMAT,
 			$this->getTableName(),
 			implode(", ", $columns),
@@ -65,6 +67,26 @@ class SQLHelper{
 					return sprintf(":%s", $k);
 				}, $columns
 			))
+		);
+	}
+
+	/**
+	 * @param string[] $columns
+	 * @param string[] $identifiers
+	 */
+	public function generateUpdate(array $columns, array $identifiers): string{
+		return sprintf(static::UPDATE_FORMAT,
+			$this->getTableName(),
+			implode(", ", array_map(
+				function(string $k): string{
+					return sprintf("%1\$s = :%1\$s", $k);
+				}, $columns
+			)),
+			implode(", ", array_map(
+				function(string $k): string{
+					return sprintf("%1\$s = :%1\$s", $k);
+				}, $identifiers
+			)),
 		);
 	}
 }
