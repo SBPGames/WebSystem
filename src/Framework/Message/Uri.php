@@ -3,7 +3,7 @@
 namespace SBPGames\Framework\Message;
 
 use Psr\Http\Message\UriInterface;
-use SBPGames\Framework\Exception\NotImplementedException;
+use SBPGames\Framework\NotImplementedException;
 
 /**
  * @package SBPGames\Framework\Message
@@ -17,7 +17,7 @@ class Uri implements UriInterface{
 		."ABCDEFGHIJKLMNOPQRSTUVWXYZ" // unreserved
 		."0123456789" // unreserved
 		."-._~" // unreserved
-		."!$&'()*+,;=@:"; // sub-delims: reserved by allowed in paths
+		."!$&'()*+,;=@:"; // sub-delims: reserved but allowed in paths
 	public const QUERY_ALLOWED_CHARACTERS = Uri::PATH_ALLOWED_CHARACTERS."/?[]";
 	public const FRAGMENT_ALLOWED_CHARACTERS = Uri::PATH_ALLOWED_CHARACTERS."/?";
 
@@ -204,10 +204,18 @@ class Uri implements UriInterface{
 		$encoded = "";
 
 		for($i = 0; $i < strlen($text); $i++){
-			$encoded .= (
-				$text[$i] !== "/" && !str_contains($charSet, $text[$i]) ?
-					rawurlencode($text[$i]) : $text[$i]
-			);
+			$pchar = $text[$i];
+
+			if($pchar === "%"
+				&& preg_match("/\d/", $text[$i + 1] ?? "")
+				&& preg_match("/\d/", $text[$i + 2] ?? "")
+			){
+				$pchar .= $text[$i + 1].$text[$i + 2];
+				$i += 2;
+			}else if($text[$i] !== "/" && !str_contains($charSet, $pchar))
+				$pchar = rawurlencode($pchar);
+
+			$encoded .= $pchar;
 		}
 
 		return $encoded;
