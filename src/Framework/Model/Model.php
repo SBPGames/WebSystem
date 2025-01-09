@@ -90,10 +90,7 @@ abstract class Model{
 	// SETTERS
 	protected function setIdentifier(string $key, mixed $value): void{
 		if(!is_null($this->getOneIdentifier($key)))
-			throw new ModelException(sprintf(
-				"%s's %s identifier cannot be modified;",
-				static::class, $key
-			));
+			throw new ModelException("$key identifier cannot be modified;");
 
 		$this->identifiers[$key] = $value;
 	}
@@ -118,11 +115,9 @@ abstract class Model{
 			if(!$reflecClass->hasProperty($key)
 				&& !static::hasIdentifierField($key)
 			)
-				throw new ModelException(sprintf(
-					"%s's field \"%s\" used as a filter or a sort key "
-					."doesn't exist;",
-					static::class, $key
-				));
+				throw new ModelException(
+					"$key field used as a filter or a sort key doesn't exist;"
+				);
 
 		return static::select($database, $filters, $sortKeys, $page, $limit);
 	}
@@ -134,16 +129,14 @@ abstract class Model{
 		// Checks identifiers existence.
 		foreach(array_keys($identifiers) as $key)
 			if(!static::hasIdentifierField($key))
-				throw new ModelException(sprintf(
-					"%s's field \"%s\" used as an identifier key but isn't;",
-					static::class, $key
-				));
+				throw new ModelException(
+					"$key field used as an identifier key but isn't;"
+				);
 
 		if(count($identifiers) !== count(static::getIdentifierNames()))
-			throw new ModelException(sprintf(
-				"%s's identifier keys are missing to fully identify it;",
-				static::class
-			));
+			throw new ModelException(
+				"Identifier keys are missing to fully identify it;"
+			);
 
 		return static::select($database, $identifiers, [], 0, 1)[0] ?? null;
 	}
@@ -153,17 +146,13 @@ abstract class Model{
 
 	public function publish(DatabaseService $database): void{
 		if($this->isPublished())
-			throw new ModelException(sprintf(
-				"%s already published.", static::class
-			));
+			throw new ModelException("Already published.");
 
 		$this->published = $this->insert($database);
 	}
 	public function save(DatabaseService $database): void{
 		if(!$this->isPublished())
-			throw new ModelException(sprintf(
-				"%s isn't published.", static::class
-			));
+			throw new ModelException("Isn't published.");
 
 		$this->update($database);
 	}
@@ -269,6 +258,10 @@ abstract class Model{
 		string $name, mixed $value, string|array $types
 	){
 		$types = is_string($types) ? [$types] : array_values($types);
+
+		// Allows int to float conversion
+		if(in_array("float", $types))
+			array_push($types, "int");
 
 		// Adapts type names to align them to gettype returns.
 		for($i = 0; $i < count($types); $i++)
