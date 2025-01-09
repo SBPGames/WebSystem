@@ -16,9 +16,11 @@ class FileStream implements StreamInterface{
 	public const PHP_OUTPUT_STREAM_URI = "php://output";
 	public const PHP_TEMPORATY_STREAM_URI = "php://temp";
 
+	private string $filename;
 	private $stream;
 
 	public function __construct(string $filename, string $mode = ""){
+		$this->filename = $filename;
 		$this->open($filename, $mode);
 	}
 
@@ -36,6 +38,7 @@ class FileStream implements StreamInterface{
 	// GETTERS
 	private function getStream(){ return $this->stream; }
 
+	public function getName(): string{ return $this->filename; }
 	public function getSize(): ?int{
 		$size = null;
 
